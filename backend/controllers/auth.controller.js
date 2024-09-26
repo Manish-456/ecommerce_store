@@ -83,23 +83,82 @@ export async function signUp(req, res) {
     setCookies(res, accessToken, refreshToken);
 
     return res.status(201).json({
-      user: {
-        name,
-        email,
-        _id: user._id,
-        role: user.role,
-      },
-      message: "User registered successfully",
+      name,
+      email,
+      _id: user._id,
+      role: user.role,
     });
   } catch (error) {
+    console.log("[SIGNIN_ERROR]");
+
     return res.status(500).json({
       message: error.message,
     });
   }
 }
 export async function logIn(req, res) {
-  return res.send("login called");
+  const { email, name, password } = req.body;
+
+  try {
+    // Check if user already exists in the database
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    const isPasswordMatch = await user.comparePassword(password);
+    if (!isPasswordMatch) {
+      return res.status(400).json({
+        message: "Invalid credentials",
+      });
+    }
+
+    // Authenticate user
+    const { accessToken, refreshToken } = generateTokens(user._id);
+    await storeRefreshToken(user._id, refreshToken);
+
+    setCookies(res, accessToken, refreshToken);
+
+    return res.status(201).json({
+      _id: user._id,
+      name: user.name,
+      role: user.role,
+      email: user.email,
+    });
+  } catch (error) {
+    console.log("[LOGIN_ERROR]");
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
 }
 export async function logOut(req, res) {
-  return res.send("logout called");
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    console.log(refreshToken);
+    if (refreshToken) {
+      const decoded = jwt.verify(
+        refreshToken,
+        process.env.REFRESH_TOKEN_SECRET
+      );
+      await redis.del(`refresh_token:${decoded.userId}`);
+    }
+
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+
+    res.json({
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    console.log("[LOGOUT_ERROR]");
+
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
 }
