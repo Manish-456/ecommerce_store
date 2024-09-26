@@ -46,6 +46,7 @@ const setCookies = (res, accessToken, refreshToken) => {
     sameSite: "strict", // prevent CSRF attack, cross-site request forgery attack
     maxAge: 15 * 60 * 1000, // 15 minutes
   });
+
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true, // prevent XSS attacks, cross site scripting attack
     secure: process.env.NODE_ENV === "production",
@@ -89,10 +90,11 @@ export async function signUp(req, res) {
       role: user.role,
     });
   } catch (error) {
-    console.log("[SIGNIN_ERROR]");
+    console.log("[SIGNIN_ERROR]: ", error.message);
 
-    return res.status(500).json({
-      message: error.message,
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
     });
   }
 }
@@ -129,9 +131,10 @@ export async function logIn(req, res) {
       email: user.email,
     });
   } catch (error) {
-    console.log("[LOGIN_ERROR]");
-    return res.status(500).json({
-      message: error.message,
+    console.log("[LOGIN_ERROR]: ", error.message);
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
     });
   }
 }
@@ -154,8 +157,54 @@ export async function logOut(req, res) {
       message: "Logged out successfully",
     });
   } catch (error) {
-    console.log("[LOGOUT_ERROR]");
+    console.log("[LOGOUT_ERROR]: ", error.message);
 
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+}
+
+// This will refresh the access token
+export async function refreshToken(req, res) {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+      return res.status(400).json({
+        message: "No refresh token provided",
+      });
+    }
+
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    const storedToken = await redis.get(`refresh_token:${decoded.userId}`);
+
+    if (storedToken !== refreshToken) {
+      return res.status(400).json({
+        message: "Invalid refresh token",
+      });
+    }
+
+    const accessToken = jwt.sign(
+      { userId: decoded.userId },
+      process.env.ACCESS_TOKEN_SECRET,
+      {
+        expiresIn: "15m",
+      }
+    );
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true, // prevent XSS attacks, cross site scripting attack
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict", // prevent CSRF attack, cross-site request forgery attack
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+
+    res.json({
+      message: "Token refreshed",
+    });
+  } catch (error) {
+    console.log(`[REFRESH_ERROR]: ${error.message}`);
     res.status(500).json({
       message: "Server error",
       error: error.message,
