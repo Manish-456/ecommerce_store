@@ -178,3 +178,18 @@ export async function getRecommendedProducts(req, res) {
     });
   }
 }
+
+export async function getProductsByCategory(req, res) {
+  const { category } = req.params;
+  try {
+    // Retrieve products by category
+    const products = await Product.find({ category });
+    return res.json(products);
+  } catch (error) {
+    console.log(`[GET_PRODUCTS_BY_CATEGORY_ERROR]: ${error.message}`);
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+}

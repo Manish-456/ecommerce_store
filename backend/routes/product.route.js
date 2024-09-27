@@ -4,6 +4,7 @@ import {
   deleteProduct,
   getAllProducts,
   getFeaturedProducts,
+  getProductsByCategory,
   getRecommendedProducts,
 } from "../controllers/product.controller.js";
 import { adminRoute, protectRoute } from "../middleware/auth.middleware.js";
@@ -12,6 +13,7 @@ const router = Router();
 
 router.get("/featured", getFeaturedProducts);
 router.get("/recommendations", getRecommendedProducts);
+router.get("/category/:category", getProductsByCategory);
 
 router
   .route("/")
