@@ -92,3 +92,52 @@ export async function createProduct(req, res) {
     });
   }
 }
+
+export async function deleteProduct(req, res) {
+  try {
+    // Find the product by ID
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: "Product not found" });
+
+    // Check if the product is a featured product
+    const isFeatured = product.isFeatured;
+
+    // Delete the product image from Cloudinary if it exists
+    if (product.image) {
+      const publicId = product.image.split(".")[0];
+      try {
+        await cloudinary.uploader.destroy(`products/${publicId}`);
+        console.log(`Deleted image from cloudinary`);
+      } catch (error) {
+        console.log(`[ERROR_DELETING_IMAGE]`, error.message);
+      }
+    }
+
+    // Delete the product from the database
+    await Product.findByIdAndDelete(req.params.id);
+
+    // If the deleted product was a featured product, update the featured products cache
+    if (isFeatured) {
+      // Retrieve the cached featured products from Redis
+      const cachedFeaturedProduct = await redis.get("featured_products");
+      const featuredProduct = JSON.parse(cachedFeaturedProduct);
+      // Filter out the deleted product from the cached featured products
+      const updatedFeaturedProduct = featuredProduct.filter(
+        (product) => product._id !== req.params.id
+      );
+      // Update the featured products cache in Redis
+      await redis.set(
+        "featured_products",
+        JSON.stringify(updatedFeaturedProduct)
+      );
+    }
+
+    res.json({ message: "Product deleted" });
+  } catch (error) {
+    console.log(`[PRODUCT_DELETION_ERROR]: ${error.message}`);
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+}
