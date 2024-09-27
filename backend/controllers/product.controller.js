@@ -1,5 +1,6 @@
 import redis from "../database/redis.js";
 import Product from "../database/models/product.model.js";
+import cloudinary from "../database/cloudinary.js";
 
 export async function getAllProducts(_req, res) {
   try {
@@ -42,6 +43,48 @@ export async function getFeaturedProducts(_req, res) {
   } catch (error) {
     // Log any errors that occur during the process
     console.log(`[GET_FEATURED_PRODUCTS_ERROR]: ${error.message}`);
+    // Return a 500 error to the client with the error message
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+}
+
+export async function createProduct(req, res) {
+  try {
+    const { name, description, price, image, category } = req.body;
+
+    // Variable to store the cloudinary response
+    let cloudinaryResponse = null;
+
+    // If an image is provided, upload it to Cloudinary
+    if (image) {
+      cloudinaryResponse = await cloudinary.uploader.upload(image, {
+        folder: "products",
+      });
+    }
+
+    // Create a new Product instance with the provided details
+    const newProduct = new Product({
+      name,
+      description,
+      price,
+      image: cloudinaryResponse?.secure_url
+        ? cloudinaryResponse?.secure_url
+        : null,
+      category,
+    });
+
+    // Save the new product to the database
+    await newProduct.save();
+
+    return res.status(201).json({
+      product: newProduct,
+    });
+  } catch (error) {
+    // Log any errors that occur during the process
+    console.log(`[PRODUCT_CREATION_ERROR]: ${error.message}`);
     // Return a 500 error to the client with the error message
     res.status(500).json({
       message: "Server error",
