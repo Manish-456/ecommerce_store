@@ -141,3 +141,40 @@ export async function deleteProduct(req, res) {
     });
   }
 }
+
+export async function getRecommendedProducts(req, res) {
+  try {
+    // Use the aggregate method to perform a pipeline of operations on the Product collection
+    const products = await Product.aggregate([
+      {
+        // $sample randomly selects the specified number of documents from the input documents
+        // In this case, we're selecting 3 random products
+        $sample: {
+          size: 3,
+        },
+      },
+
+      {
+        // $project is used to select specific fields from the input documents
+        // We're selecting the _id, name, image, description, and price fields
+        $project: {
+          _id: 1,
+          name: 1,
+          image: 1,
+          description: 1,
+          price: 1,
+        },
+      },
+    ]);
+
+    res.json(products);
+  } catch (error) {
+    // Log any errors that occur during the process
+    console.log(`[RECOMMENDATION_ERROR]: ${error.message}`);
+    // Return a 500 error to the client with the error message
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+}
