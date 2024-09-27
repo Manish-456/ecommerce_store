@@ -99,7 +99,7 @@ export async function signUp(req, res) {
   }
 }
 export async function logIn(req, res) {
-  const { email, name, password } = req.body;
+  const { email, password } = req.body;
 
   try {
     // Check if user already exists in the database
