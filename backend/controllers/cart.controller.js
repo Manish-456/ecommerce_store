@@ -1,4 +1,4 @@
-import Product from "../database/models/product.model";
+import Product from "../database/models/product.model.js";
 
 export async function getCartProducts(req, res) {
   try {
