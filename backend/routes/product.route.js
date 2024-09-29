@@ -8,7 +8,7 @@ import {
   getRecommendedProducts,
   toggleFeaturedProduct,
 } from "../controllers/product.controller.js";
-import { adminRoute, protectRoute } from "../middleware/auth.middleware.js";
+import { adminRoute, protectedRoute } from "../middleware/auth.middleware.js";
 
 const router = Router();
 
@@ -18,12 +18,12 @@ router.get("/category/:category", getProductsByCategory);
 
 router
   .route("/")
-  .get(protectRoute, adminRoute, getAllProducts)
-  .post(protectRoute, adminRoute, createProduct);
+  .get(protectedRoute, adminRoute, getAllProducts)
+  .post(protectedRoute, adminRoute, createProduct);
 
 router
   .route("/:id")
-  .delete(protectRoute, adminRoute, deleteProduct)
-  .patch(protectRoute, adminRoute, toggleFeaturedProduct);
+  .delete(protectedRoute, adminRoute, deleteProduct)
+  .patch(protectedRoute, adminRoute, toggleFeaturedProduct);
 
 export default router;

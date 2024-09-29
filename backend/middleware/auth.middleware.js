@@ -12,7 +12,7 @@ import User from "../database/models/user.model.js";
 - If the token is valid and the user exists, it sets the req.user property and calls the next function in the middleware chain.
 - Otherwise, it returns a 401 Unauthorized response with a JSON message indicating the reason for the failure (e.g., no token provided, token expired, or user not found). 
  */
-export const protectRoute = async (req, res, next) => {
+export const protectedRoute = async (req, res, next) => {
   try {
     const accessToken = req.cookies.accessToken;
 
