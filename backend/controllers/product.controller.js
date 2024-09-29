@@ -2,6 +2,15 @@ import redis from "../database/redis.js";
 import Product from "../database/models/product.model.js";
 import cloudinary from "../database/cloudinary.js";
 
+const updateFeaturedProductCache = async () => {
+  try {
+    const featuredProducts = await Product.find({ isFeatured: true }).lean();
+    await redis.set("featured_products", JSON.stringify(featuredProducts));
+  } catch (error) {
+    console.log("[UPDATE_FEATURED_PRODUCT_CACHE_ERROR]: ", error.message);
+  }
+};
+
 export async function getAllProducts(_req, res) {
   try {
     const products = await Product.find({});
@@ -118,18 +127,12 @@ export async function deleteProduct(req, res) {
 
     // If the deleted product was a featured product, update the featured products cache
     if (isFeatured) {
-      // Retrieve the cached featured products from Redis
-      const cachedFeaturedProduct = await redis.get("featured_products");
-      const featuredProduct = JSON.parse(cachedFeaturedProduct);
-      // Filter out the deleted product from the cached featured products
-      const updatedFeaturedProduct = featuredProduct.filter(
+      const cachedFeaturedProducts = await redis.get("featured_products");
+      const featuredProducts = JSON.parse(cachedFeaturedProducts);
+      const updatedFeaturedProducts = featuredProducts.filter(
         (product) => product._id !== req.params.id
       );
-      // Update the featured products cache in Redis
-      await redis.set(
-        "featured_products",
-        JSON.stringify(updatedFeaturedProduct)
-      );
+      await redis.set("featured_products", updatedFeaturedProducts);
     }
 
     res.json({ message: "Product deleted" });
@@ -187,6 +190,34 @@ export async function getProductsByCategory(req, res) {
     return res.json(products);
   } catch (error) {
     console.log(`[GET_PRODUCTS_BY_CATEGORY_ERROR]: ${error.message}`);
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+}
+
+export async function toggleFeaturedProduct(req, res) {
+  const { id } = req.params;
+  try {
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return res.status(404).json({
+        message: "Product not found",
+      });
+    }
+
+    product.isFeatured = !product.isFeatured;
+    const updatedProduct = await product.save();
+
+    // Update featured product in cache.
+    await updateFeaturedProductCache();
+
+    return res.json(updatedProduct);
+  } catch (error) {
+    console.log(`[TOGGLE_FEATURED_PRODUCT_ERROR]: ${error.message}`);
+    // Return a 500 error to the client with the error message
     res.status(500).json({
       message: "Server error",
       error: error.message,
