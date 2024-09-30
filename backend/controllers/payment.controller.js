@@ -1,6 +1,6 @@
 import stripe from "../lib/stripe.js";
 import Coupon from "../database/models/coupon.model.js";
-
+import Order from "../database/models/order.model.js";
 /**
  * Creates a Stripe checkout session with the given products and coupon.
  * If the total amount of the products is greater than or equal to $200, creates a new coupon.
