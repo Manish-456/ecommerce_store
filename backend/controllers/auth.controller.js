@@ -55,6 +55,15 @@ const setCookies = (res, accessToken, refreshToken) => {
   });
 };
 
+export async function getProfile(req, res) {
+  try {
+    res.json(req.user);
+  } catch (error) {
+    console.log("[GET_PROFILE_ERROR]: ", error.message);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+}
+
 export async function signUp(req, res) {
   const { email, name, password } = req.body;
 
