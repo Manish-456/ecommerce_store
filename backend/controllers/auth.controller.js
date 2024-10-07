@@ -133,7 +133,7 @@ export async function logIn(req, res) {
 
     setCookies(res, accessToken, refreshToken);
 
-    return res.status(201).json({
+    return res.status(200).json({
       _id: user._id,
       name: user.name,
       role: user.role,
