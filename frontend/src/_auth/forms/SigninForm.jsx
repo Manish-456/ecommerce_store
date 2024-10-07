@@ -7,8 +7,8 @@ import { useUserStore } from "../../stores/useUserStore";
 export default function SigninForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { loading, login } = useUserStore();
 
+  const { loading, login } = useUserStore();
   const handleSubmit = (e) => {
     e.preventDefault();
     login({ email, password });
