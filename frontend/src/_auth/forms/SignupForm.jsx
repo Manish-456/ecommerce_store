@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { UserPlus, Mail, Lock, User, ArrowRight, Loader } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useUserStore } from "../../stores/useUserStore";
 
 export default function SignupForm() {
   const [formData, setFormData] = useState({
@@ -11,10 +12,13 @@ export default function SignupForm() {
     confirmPassword: "",
   });
 
+  const { signup, loading } = useUserStore();
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formData);
+    signup(formData);
   };
+
   return (
     <>
       <motion.div
@@ -23,7 +27,7 @@ export default function SignupForm() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
-        <h2 className="mt-6 text-center  text-2xl font-bold text-emerald-400">
+        <h2 className="mt-6 text-center  text-3xl font-extrabold text-emerald-400">
           Create your account
         </h2>
       </motion.div>
@@ -154,11 +158,9 @@ export default function SignupForm() {
 							rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600
 							 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2
 							  focus:ring-emerald-500 transition duration-150 ease-in-out disabled:opacity-50"
-              // disabled={loading}
+              disabled={loading}
             >
-              <UserPlus className="mr-2 h-5 w-5" aria-hidden="true" />
-              Sign up
-              {/* {loading ? (
+              {loading ? (
                 <>
                   <Loader
                     className="mr-2 h-5 w-5 animate-spin"
@@ -168,8 +170,10 @@ export default function SignupForm() {
                 </>
               ) : (
                 <>
+                  <UserPlus className="mr-2 h-5 w-5" aria-hidden="true" />
+                  Sign up
                 </>
-              )} */}
+              )}
             </button>
           </form>
 
