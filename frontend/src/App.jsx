@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router-dom";
-import { Home } from "./_root/pages";
+import { Dashboard, Home } from "./_root/pages";
 import AuthLayout from "./_auth/AuthLayout";
 import SignupForm from "./_auth/forms/SignupForm";
 import SigninForm from "./_auth/forms/SigninForm";
@@ -16,6 +16,7 @@ function App() {
       <Routes>
         <Route element={<RootLayout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/dashboard" element={<Dashboard />} />
         </Route>
         <Route element={<AuthLayout />}>
           <Route path="/sign-up" element={<SignupForm />} />

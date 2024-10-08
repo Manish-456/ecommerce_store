@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 import { useUserStore } from "../stores/useUserStore";
 
@@ -8,6 +8,7 @@ import LoadingSpinner from "../components/shared/loading-spinner";
 
 export default function RootLayout() {
   const { user, checkingAuth, checkAuth } = useUserStore();
+  const { pathname } = useLocation();
 
   useEffect(() => {
     checkAuth();
@@ -19,6 +20,10 @@ export default function RootLayout() {
 
   if (!user) {
     return <Navigate to="/sign-in" replace />;
+  }
+
+  if (user && user.role !== "admin" && pathname === "/dashboard") {
+    return <Navigate to={"/"} replace />;
   }
 
   return (
