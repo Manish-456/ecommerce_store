@@ -1,10 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { TABS } from "../../constants";
 import CreateProductForm from "../../components/create-product-form";
+import ProductsList from "../../components/products-list";
+import { useProductStore } from "../../stores/useProductStore";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("create");
+  const { fetchAllProducts } = useProductStore();
+
+  useEffect(() => {
+    fetchAllProducts();
+  }, [fetchAllProducts]);
+
   return (
     <div className="relative overflow-hidden">
       <div className="relative z-10 container mx-auto px-4 py-16">
@@ -34,6 +42,7 @@ export default function Dashboard() {
         </div>
         <div className="max-w-xl mx-auto">
           {activeTab === "create" && <CreateProductForm />}
+          {activeTab === "products" && <ProductsList />}
         </div>
       </div>
     </div>

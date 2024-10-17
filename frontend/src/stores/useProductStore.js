@@ -23,4 +23,47 @@ export const useProductStore = create((set) => ({
       toast.error(error.response.data.error || "An error occurred");
     }
   },
+  fetchAllProducts: async () => {
+    set({ loading: true });
+    try {
+      // Send a get request to the /products route
+      const res = await axios.get("/products");
+      set({ products: res.data.products, loading: false });
+    } catch (error) {
+      toast.error(error.response.data.error);
+      set({ loading: false });
+    }
+  },
+  toggleFeaturedProduct: async (productId) => {
+    set({ loading: true });
+    try {
+      const res = await axios.patch(`/products/${productId}`);
+      set((prevProduct) => ({
+        products: prevProduct.products.map((product) =>
+          product._id === productId
+            ? { ...product, isFeatured: res.data.isFeatured }
+            : product
+        ),
+        loading: false,
+      }));
+    } catch (error) {
+      toast.error(error.response.data.error || "Failed to update product");
+      set({ loading: false });
+    }
+  },
+  deleteProduct: async (productId) => {
+    set({ loading: true });
+    try {
+      await axios.delete(`/products/${productId}`);
+      set((prevProduct) => ({
+        products: prevProduct.products.filter(
+          (product) => product._id !== productId
+        ),
+        loading: false,
+      }));
+    } catch (error) {
+      toast.error(error.response.data.error || "Failed to delete product");
+      set({ loading: false });
+    }
+  },
 }));
