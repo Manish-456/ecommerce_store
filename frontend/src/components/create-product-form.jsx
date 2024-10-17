@@ -38,8 +38,6 @@ export default function CreateProductForm() {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("hello world");
-
     try {
       await createProduct(newProduct);
       setNewProduct({
@@ -51,7 +49,6 @@ export default function CreateProductForm() {
       });
     } catch (error) {
       console.log(error);
-      console.log("error creating product");
     }
   };
 
