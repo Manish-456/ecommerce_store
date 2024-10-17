@@ -113,7 +113,7 @@ export async function deleteProduct(req, res) {
 
     // Delete the product image from Cloudinary if it exists
     if (product.image) {
-      const publicId = product.image.split(".")[0];
+      const publicId = product.image.split("/").pop().split(".")[0];
       try {
         await cloudinary.uploader.destroy(`products/${publicId}`);
         console.log(`Deleted image from cloudinary`);
@@ -122,18 +122,21 @@ export async function deleteProduct(req, res) {
       }
     }
 
-    // Delete the product from the database
-    await Product.findByIdAndDelete(req.params.id);
-
     // If the deleted product was a featured product, update the featured products cache
-    if (isFeatured) {
+    https: if (isFeatured) {
       const cachedFeaturedProducts = await redis.get("featured_products");
       const featuredProducts = JSON.parse(cachedFeaturedProducts);
       const updatedFeaturedProducts = featuredProducts.filter(
         (product) => product._id !== req.params.id
       );
-      await redis.set("featured_products", updatedFeaturedProducts);
+      await redis.set(
+        "featured_products",
+        JSON.stringify(updatedFeaturedProducts)
+      );
     }
+
+    // Delete the product from the database
+    await Product.findByIdAndDelete(req.params.id);
 
     res.json({ message: "Product deleted" });
   } catch (error) {
