@@ -22,7 +22,7 @@ export default function RootLayout() {
     return <Navigate to="/sign-in" replace />;
   }
 
-  if (user && user.role !== "admin" && pathname === "/dashboard") {
+  if (user && user.role !== "admin" && pathname === "/secret-dashboard") {
     return <Navigate to={"/"} replace />;
   }
 

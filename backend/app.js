@@ -15,7 +15,9 @@ app.set("x-powered-by", false);
 app.set("etag", false);
 
 // Middleware
-app.use(express.json());
+app.use(express.json({
+    limit: "10mb"
+}));
 app.use(cookieParser());
 
 // Routes
