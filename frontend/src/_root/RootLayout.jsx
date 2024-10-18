@@ -5,14 +5,20 @@ import { useUserStore } from "../stores/useUserStore";
 
 import Navbar from "../components/shared/navbar";
 import LoadingSpinner from "../components/shared/loading-spinner";
+import { useCartStore } from "../stores/useCartStore";
 
 export default function RootLayout() {
   const { user, checkingAuth, checkAuth } = useUserStore();
   const { pathname } = useLocation();
+  const { getCartItems } = useCartStore();
 
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+
+  useEffect(() => {
+    getCartItems();
+  }, [getCartItems]);
 
   if (checkingAuth) {
     return <LoadingSpinner />;
