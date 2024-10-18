@@ -6,12 +6,16 @@ export async function getCartProducts(req, res) {
     // Populate the cart items with the corresponding product details
     const products = await Product.find({
       _id: {
-        $in: user.cartItem.map((item = item.product)),
+        $in: user.cartItem.map((item) => item.product),
       },
     });
+
     // Add quantity for each product
     const cartItems = products.map((product) => {
-      const item = req.user.cartItem.find((item) => item._id === product._id);
+      const item = req.user.cartItem.find(
+        (item) => item.product.toString() === product._id.toString()
+      );
+
       return { ...product.toJSON(), quantity: item.quantity };
     });
 
@@ -29,8 +33,10 @@ export async function addToCart(req, res) {
   try {
     const { productId } = req.body;
     const user = req.user;
+    const existingItem = user.cartItem.find(
+      (item) => item.product.toString() === productId
+    );
 
-    const existingItem = user.cartItem.find((item) => item._id === productId);
     // Check if the product is already in the user's cart
 
     if (existingItem) {
@@ -40,7 +46,7 @@ export async function addToCart(req, res) {
     } else {
       // If the product is not in the cart, add it with a quantity of 1
 
-      user.cartItems.push({
+      user.cartItem.push({
         product: productId,
       });
     }
