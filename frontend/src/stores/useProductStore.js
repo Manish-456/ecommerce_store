@@ -8,7 +8,6 @@ export const useProductStore = create((set) => ({
   setProducts: (products) => set({ products }),
   createProduct: async (product) => {
     set({ loading: true });
-    console.log(product);
     try {
       // Send a post request to the /products/create route
       const res = await axios.post("/products", product);
