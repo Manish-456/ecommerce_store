@@ -65,7 +65,7 @@ export default function FeaturedProducts({ products }) {
                         {product.name}
                       </h3>
                       <p className="text-emerald-300 font-medium mb-4">
-                        ${product.price.toFixed(2)}
+                        ${product?.price?.toFixed(2)}
                       </p>
                       <button
                         onClick={() => addToCart(product)}
