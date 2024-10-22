@@ -9,69 +9,63 @@ import Order from "../database/models/order.model.js";
  * @param {Object} res - The HTTP response object
  * @return {Object} A JSON response indicating the success or failure of the operation
  */
-export async function createCheckoutSession(req, res) {
+export const createCheckoutSession = async (req, res) => {
   try {
-    const { products, coupon } = req.body;
+    const { products, couponCode } = req.body;
 
-    // Check if the products array is valid
     if (!Array.isArray(products) || products.length === 0) {
-      return res.status(400).json({
-        error: "Invalid or empty products",
-      });
+      return res.status(400).json({ error: "Invalid or empty products array" });
     }
 
-    // Convert the products array to Stripe price_data objects
-    const lineItems = products.map((product) => ({
-      price_data: {
-        currency: "usd",
-        product_data: {
-          name: product.name,
-          images: [product.image],
+    let totalAmount = 0;
+
+    const lineItems = products.map((product) => {
+      const amount = Math.round(product.price * 100); // stripe wants u to send in the format of cents
+      totalAmount += amount * product.quantity;
+
+      return {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: product.name,
+            images: [product.image],
+          },
+          unit_amount: amount,
         },
-        unit_amount: Math.round(product.price * 100),
-      },
-      quantity: product.quantity || 1,
-    }));
+        quantity: product.quantity || 1,
+      };
+    });
 
-    // Calculate the total amount of the products
-    const totalAmount = lineItems.reduce(
-      (acc, item) => acc + item.price_data.unit_amount * item.quantity,
-      0
-    );
-
-    let couponDiscount = 0;
-    if (coupon) {
-      const couponData = await Coupon.findOne({
-        code: coupon,
+    let coupon = null;
+    if (couponCode) {
+      coupon = await Coupon.findOne({
+        code: couponCode,
         userId: req.user._id,
         isActive: true,
       });
-
-      // If the coupon is valid, calculate the discount
-      if (couponData) {
-        couponDiscount = Math.round(
-          (totalAmount * couponData.discountPercentage) / 100
+      if (coupon) {
+        totalAmount -= Math.round(
+          (totalAmount * coupon.discountPercentage) / 100
         );
       }
     }
 
-    // Create a Stripe checkout session with the given products and coupon
-    const session = await stripe.checkout.create({
+    const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `${process.env.CLIENT_URL}/purchase-success?session_id=${CHECKOUT_SESSION_ID}`,
+      success_url: `${process.env.CLIENT_URL}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
       discounts: coupon
         ? [
             {
-              coupon: await createStripeCoupon(couponDiscount),
+              coupon: await createStripeCoupon(coupon.discountPercentage),
             },
           ]
         : [],
       metadata: {
         userId: req.user._id.toString(),
-        couponCode: coupon || "",
+        couponCode: couponCode || "",
         products: JSON.stringify(
           products.map((p) => ({
             id: p._id,
@@ -82,22 +76,17 @@ export async function createCheckoutSession(req, res) {
       },
     });
 
-    // If the total amount is greater than or equal to $200, create a new coupon
     if (totalAmount >= 20000) {
       await createNewCoupon(req.user._id);
     }
-
-    res.status(200).json({
-      id: session.id,
-      totalAmount: totalAmount / 100,
-    });
+    res.status(200).json({ id: session.id, totalAmount: totalAmount / 100 });
   } catch (error) {
-    return res.status(500).json({
-      message: "Server error",
-      error: error.message,
-    });
+    console.error("Error processing checkout:", error);
+    res
+      .status(500)
+      .json({ message: "Error processing checkout", error: error.message });
   }
-}
+};
 
 /**
  * Handles a successful checkout by retrieving the Stripe session,

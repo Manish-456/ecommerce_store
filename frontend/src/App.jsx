@@ -1,5 +1,12 @@
 import { Route, Routes } from "react-router-dom";
-import { Category, Dashboard, Home } from "./_root/pages";
+import {
+  Cart,
+  Category,
+  Dashboard,
+  Home,
+  PurchaseCancel,
+  PurchaseSuccess,
+} from "./_root/pages";
 import AuthLayout from "./_auth/AuthLayout";
 import SignupForm from "./_auth/forms/SignupForm";
 import SigninForm from "./_auth/forms/SigninForm";
@@ -18,6 +25,9 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/secret-dashboard" element={<Dashboard />} />
           <Route path="/category/:category" element={<Category />} />
+          <Route path="/purchase-success" element={<PurchaseSuccess />} />
+          <Route path="/purchase-cancel" element={<PurchaseCancel />} />
+          <Route path="/cart" element={<Cart />} />
         </Route>
         <Route element={<AuthLayout />}>
           <Route path="/sign-up" element={<SignupForm />} />

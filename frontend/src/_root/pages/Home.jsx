@@ -1,7 +1,16 @@
 import { CATEGORIES } from "../../constants";
 import CategoryItem from "../../components/shared/category-item";
+import { useProductStore } from "../../stores/useProductStore";
+import { useEffect } from "react";
+import FeaturedProducts from "../../components/featured-products";
 
 export default function Home() {
+  const { fetchFeaturedProducts, products, isLoading } = useProductStore();
+
+  useEffect(() => {
+    fetchFeaturedProducts();
+  }, [fetchFeaturedProducts]);
+
   return (
     <div className="relative text-white overflow-hidden">
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -16,6 +25,9 @@ export default function Home() {
             <CategoryItem category={category} key={category.name} />
           ))}
         </div>
+        {!isLoading && products.length > 0 && (
+          <FeaturedProducts products={products} />
+        )}
       </div>
     </div>
   );

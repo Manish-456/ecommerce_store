@@ -15,6 +15,6 @@ router
   .post(protectedRoute, addToCart)
   .delete(protectedRoute, removeAllFromCart);
 
-router.put("/", protectedRoute, updateQuantity);
+router.put("/:id", protectedRoute, updateQuantity);
 
 export default router;

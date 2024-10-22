@@ -4,6 +4,7 @@ import { TABS } from "../../constants";
 import CreateProductForm from "../../components/create-product-form";
 import ProductsList from "../../components/products-list";
 import { useProductStore } from "../../stores/useProductStore";
+import AnalyticsTab from "../../components/analytics-tab";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("create");
@@ -15,7 +16,7 @@ export default function Dashboard() {
 
   return (
     <div className="relative overflow-hidden">
-      <div className="relative z-10 container mx-auto px-4 py-16">
+      <div className="relative z-10 container  mx-auto px-4 py-16">
         <motion.h1
           className="text-4xl font-bold mb-8 text-emerald-400 text-center"
           initial={{ opacity: 0, y: -20 }}
@@ -42,7 +43,10 @@ export default function Dashboard() {
         </div>
         <div className="max-w-xl mx-auto">
           {activeTab === "create" && <CreateProductForm />}
-          {activeTab === "products" && <ProductsList />}
+        </div>
+        {activeTab === "products" && <ProductsList />}
+        <div className="max-w-7xl mx-auto">
+          {activeTab === "analytics" && <AnalyticsTab />}
         </div>
       </div>
     </div>

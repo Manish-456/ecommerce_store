@@ -154,9 +154,9 @@ export async function getRecommendedProducts(req, res) {
     const products = await Product.aggregate([
       {
         // $sample randomly selects the specified number of documents from the input documents
-        // In this case, we're selecting 3 random products
+        // In this case, we're selecting 4 random products
         $sample: {
-          size: 3,
+          size: 4,
         },
       },
 

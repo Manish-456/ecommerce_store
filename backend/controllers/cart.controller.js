@@ -65,13 +65,17 @@ export async function addToCart(req, res) {
 
 export async function removeAllFromCart(req, res) {
   try {
-    const { productId } = req.body;
     const user = req.user;
+    const { productId } = req.body;
 
     if (!productId) {
-      user.cartItem = [];
+      return res.status(400).json({
+        error: "Product ID is required",
+      });
     } else {
-      user.cartItem = user.cartItem.filter((item) => item._id !== productId);
+      user.cartItem = user.cartItem.filter(
+        (item) => item.product.toString() !== productId
+      );
     }
 
     await user.save();
@@ -91,7 +95,9 @@ export async function updateQuantity(req, res) {
     const { id: productId } = req.params;
     const user = req.user;
 
-    const existingItem = user.cartItem.find((item) => item._id === productId);
+    const existingItem = user.cartItem.find(
+      (item) => item.product.toString() === productId
+    );
 
     if (existingItem) {
       if (quantity <= 0) {

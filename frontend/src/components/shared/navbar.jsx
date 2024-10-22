@@ -7,7 +7,6 @@ export default function Navbar() {
   const { user, logout } = useUserStore();
   const isAdmin = user.role === "admin";
   const { cart } = useCartStore();
-
   return (
     <header className="fixed z-40 top-0 px-4 w-full bg-gray-900/90 backdrop-blur-lg  shadow-lg transition-all duration-300 border-b border-emerald-800">
       <div className="container mx-auto px-4 py-3">
