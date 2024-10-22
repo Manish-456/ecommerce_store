@@ -41,7 +41,7 @@ export default function ProductsList() {
               </td>
 
               <td>
-                <p>{product.price.toFixed(2)}</p>
+                <p>{product?.price?.toFixed(2)}</p>
               </td>
               <td>
                 <p>{product.category}</p>
