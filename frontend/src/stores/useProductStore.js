@@ -13,7 +13,7 @@ export const useProductStore = create((set) => ({
       const res = await axios.post("/products", product);
 
       set((prevState) => ({
-        products: [...prevState.products, res.data],
+        products: [...prevState.products, res.data.product],
         loading: false,
       }));
     } catch (error) {
